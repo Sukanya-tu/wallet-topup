@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:17
+    container_name: wallet-topup-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgadmin
+      POSTGRES_DB: wallet-topup
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wallet-topup-app  
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_ENV=dev
+      - APP_PORT=8080
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=pgadmin
+      - DB_NAME=wallet-topup
+      - DB_SSLMODE=disable
+      - REDIS_ADDR=redis:6379
+      - JWT_SECRET=myjwtsecretkey
+    depends_on:
+      - db
+      - redis
+  
+volumes:
+  db_data:
